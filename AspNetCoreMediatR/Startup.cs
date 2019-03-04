@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using AspNetCoreMediatR.MassTransit;
+using GreenPipes;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+
 
 namespace AspNetCoreMediatR
 {
@@ -25,9 +23,38 @@ namespace AspNetCoreMediatR
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services
+                .AddMvc()
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddMediatR();
+            services.AddSignalR();
+
+            services.AddScoped<SendMessageConsumer>();
+
+            services.AddMassTransit(c =>
+            {
+                c.AddConsumer<SendMessageConsumer>();
+            });
+
+            services.AddSingleton(provider => Bus.Factory.CreateUsingRabbitMq(
+              cfg =>
+              {
+                  var host = cfg.Host("localhost", "/", h => { });
+
+                  cfg.ReceiveEndpoint(host, "web-service-endpoint", e =>
+                  {
+                      e.PrefetchCount = 16;
+                      e.UseMessageRetry(x => x.Interval(2, 100));
+
+                      e.LoadFrom(provider);
+
+                      EndpointConvention.Map<SendMessageConsumer>(e.InputAddress);
+                  });
+              }));
+
+            services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
+            services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService, BusService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,6 +66,9 @@ namespace AspNetCoreMediatR
             }
 
             app.UseMvc();
+
+
+
         }
     }
 }

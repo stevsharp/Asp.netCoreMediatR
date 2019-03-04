@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using AspNetCoreMediatR.MassTransit;
+using MassTransit;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,14 +13,21 @@ namespace AspNetCoreMediatR.Controllers
     {
         private readonly IMediator _mediator;
 
-        public ValuesController(IMediator mediator)
+        private readonly IBus _bus;
+
+        public ValuesController(IMediator mediator, IBus bus)
         {
             _mediator = mediator;
+            _bus = bus;
         }
         // GET api/values
         [HttpGet]
         public async Task<ActionResult<IEnumerable<string>>> GetAsync()
         {
+            await _bus.Publish<Message>(new
+            {
+                Value = "123"
+            });
 
             await _mediator.Publish(new SomeEvent("Hello World"));
 
