@@ -1,4 +1,5 @@
-﻿using AspNetCoreMediatR.MassTransit;
+﻿using AspNetCoreMediatR.Events;
+using AspNetCoreMediatR.MassTransit;
 using GreenPipes;
 using MassTransit;
 using MediatR;
@@ -56,6 +57,8 @@ namespace AspNetCoreMediatR
 
             services.AddSingleton<IBus>(provider => provider.GetRequiredService<IBusControl>());
             services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService, BusService>();
+
+            services.AddScoped<IMediatorHandler, AspNetCoreMediatR.Events.InMemoryBus>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -11,4 +11,11 @@ namespace AspNetCoreMediatR
 
         public string Message { get; }
     }
+
+
+    public class NewEvent 
+    {
+
+    }
+
 }
