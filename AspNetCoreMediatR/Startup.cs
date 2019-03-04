@@ -27,7 +27,8 @@ namespace AspNetCoreMediatR
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddMediatR();
+            services.AddMediatR(typeof(Startup));
+
             services.AddSignalR();
 
             services.AddScoped<SendMessageConsumer>();

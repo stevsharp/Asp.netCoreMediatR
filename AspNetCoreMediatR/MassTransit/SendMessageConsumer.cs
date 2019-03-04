@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace AspNetCoreMediatR.MassTransit
 {
-
     public class SendMessageConsumer : IConsumer<Message>
     {
         public async Task Consume(ConsumeContext<Message> context)
@@ -15,7 +14,6 @@ namespace AspNetCoreMediatR.MassTransit
             var server = new SignalRServer();
 
             await server.Send(context.Message.Value);
-
         }
     }
 }
